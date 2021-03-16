@@ -3,10 +3,13 @@
 import argparse, sys
 import getpass
 import requests as r
+import os
+import pickle
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--version', help='Prints the version of the tool', action='store_true')
 parser.add_argument('login', help='Prompts you for your NLBKlik username/password and remembers them.')
+# parser.add_argument('balance', help='Prints the balance on all your accounts')
 args = parser.parse_args()
 
 # Unfortunately, NLB's certificate is invalid, as it's not including an intermediate
@@ -15,13 +18,34 @@ args = parser.parse_args()
 # TODO: replace with cert from https://gist.github.com/filipArena/d73026ea38df5c4bb6263b1a268723c1
 # Thanks filipd!
 VERIFY_SSL=False
+NLBCLI_USER_FOLDER_PATH=os.path.expanduser('~/.nlbcli')
+CREDENTIALS_FILE_PATH=os.path.join(NLBCLI_USER_FOLDER_PATH, 'credentials')
+SESSION_FILE_PATH=os.path.join(NLBCLI_USER_FOLDER_PATH, 'session')
+
+if not os.path.exists(NLBCLI_USER_FOLDER_PATH):
+	os.makedirs(NLBCLI_USER_FOLDER_PATH)
+	print("Info: ~/.nlbcli folder didn't exist, created it now.")
 
 if args.version:
 	print('Version: 0.1')
 elif args.login:
 	username = input('Username: ')
 	password = getpass.getpass('Password: ')
-	s = r.Session()
+	with open(CREDENTIALS_FILE_PATH, 'w') as credentials_file:
+		credentials_file.write(username + '\n' + password);
+	
+	sess = r.Session()
 	data = {"UserName": username, "Password": password, "X-Requested-With": "XMLHttpRequest"}
-	login_res = s.post('https://www.nlbklik.com.mk/Account/LoginUserNamePassword', data=data, verify=VERIFY_SSL)
-	print(login_res.text)
+	login_res = sess.post('https://www.nlbklik.com.mk/Account/LoginUserNamePassword', data=data, verify=VERIFY_SSL)
+	
+	# TODO: handle failed login
+	with open(SESSION_FILE_PATH, 'wb') as session_file:
+		pickle.dump(sess, session_file)
+
+	print('Info: logged in successfully; saved credentials and session data.')
+
+
+with open(SESSION_FILE_PATH, 'rb') as session_file:
+	sess = pickle.load(session_file)
+response = sess.get('https://www.nlbklik.com.mk/Home/Index', verify=VERIFY_SSL)
+print(response.text)
