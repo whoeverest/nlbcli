@@ -16,13 +16,10 @@ Create a symlink: `sudo ln -s /home/path/to/nlbcli/nlbcli /usr/local/bin`.
 
 Make sure it works by typing `nlbcli --version` in the terminal.
 
-Create a `~/.nlbcli` directory, if it doesn't already exist.
+Log in: `nlbcli login`
 
-Create a new file called `~/.nlbcli/credentials`. It should contain TWO lines; first the username, then the password:
+This will prompt you for your username and password, and store them in `~/.nlbcli/credentials`.
 
-```
-john.doe
-SuperSecurePass123
-```
+Sessions expire quite fast, but the tool will automatically log you back in when it detects an expired session. It'll happen in the background.
 
 Check your balance by typing `nlbcli balance`
