@@ -18,6 +18,11 @@ Make sure it works by typing `nlbcli --version` in the terminal.
 
 Create a `~/.nlbcli` directory, if it doesn't already exist.
 
-Create a new file called `~/.nlbcli/credentials`. It should contain only one line in the format `username:password`.
+Create a new file called `~/.nlbcli/credentials`. It should contain TWO lines; first the username, then the password:
+
+```
+john.doe
+SuperSecurePass123
+```
 
 Check your balance by typing `nlbcli balance`
