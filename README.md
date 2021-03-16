@@ -1,4 +1,4 @@
-# The NLB CLI: bank software in your terminal
+# The NLB CLI: NLBKlik in your terminal
 
 Disclaimer: this is an *UNOFFICAL* tool, it's not developed by НЛБ Банка АД Скопје. It's maintained by Andrej T.
 
