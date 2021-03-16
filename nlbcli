@@ -1,0 +1,10 @@
+#!/usr/bin/env python3
+
+import argparse, sys
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--version', help='Prints the version of the tool', action='store_true')
+args = parser.parse_args()
+
+if args.version:
+	print('Version: 0.1')
