@@ -12,6 +12,8 @@ Tested only on Linux.
 
 Clone this repository. `cd` into it.
 
+Run `pip install requests`
+
 Create a symlink: `sudo ln -s /home/path/to/nlbcli/nlbcli /usr/local/bin`.
 
 Make sure it works by typing `nlbcli --version` in the terminal.
