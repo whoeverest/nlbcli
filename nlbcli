@@ -12,7 +12,7 @@ import requests as r
 import bs4 as bs
 
 parser = argparse.ArgumentParser()
-parser.add_argument('command', choices=["login", "balance"])
+parser.add_argument('command', choices=["login", "balance", "allbalances"])
 # parser.add_argument('login', help='Prompts you for your NLBKlik username/password and remembers them.')
 # parser.add_argument('balance', help='Prints the balance on all your accounts')
 args = parser.parse_args()
@@ -57,3 +57,47 @@ elif args.command == 'balance':
     soup = bs.BeautifulSoup(response.text, 'html.parser')
     for el in soup.select('.widget-main .row'):
         print(el.get_text())
+
+
+elif args.command == 'allbalances':
+    with open(SESSION_FILE_PATH, 'rb') as session_file:
+        sess = pickle.load(session_file)
+    response = sess.post(
+        'https://www.nlbklik.com.mk/Home/AllBalances', verify=VERIFY_SSL)
+    soup = bs.BeautifulSoup('<html><body>' + response.text + '</body></html>', 'html.parser')
+
+    found = False
+    for el in soup.select('.table-responsive > table > tbody > tr'):
+        if (el.get('class') == 'collapse'):
+            continue
+
+        tdname = el.find('td')
+
+        tdimg = tdname.find_next_sibling()
+        if (tdimg == None):
+            continue
+
+        divnum = tdname.find('div')
+        divname = divnum.find_next_sibling()
+
+        accnum = divnum.get_text().strip()
+        accname = divname.get_text().strip()
+
+        iscard = accname.find('Трансакциска') == -1
+
+        print("Number: " + accnum)
+        print(('Card Name: ' if iscard == True else 'Account Name: ') + accname)
+
+        tdbalance = tdimg.find_next_sibling()
+        balanceval = tdbalance.get_text().strip()
+        print("Balance: " + balanceval)
+
+        tdother = tdbalance.find_next_sibling()
+        otherval = tdother.get_text().strip()
+        print(('Available: ' if iscard == True else 'Last Change: ') + otherval)
+
+        found = True
+        print('')
+
+    if (found == False):
+        print("DID NOT FIND ANYTHING, PROBABLY NOT LOGGED IN!")
