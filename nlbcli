@@ -29,6 +29,12 @@ NLBCLI_USER_FOLDER_PATH = os.path.expanduser('~/.nlbcli')
 CREDENTIALS_FILE_PATH = os.path.join(NLBCLI_USER_FOLDER_PATH, 'credentials')
 SESSION_FILE_PATH = os.path.join(NLBCLI_USER_FOLDER_PATH, 'session')
 
+
+if not os.path.exists(NLBCLI_USER_FOLDER_PATH):
+    os.makedirs(NLBCLI_USER_FOLDER_PATH)
+    print("Info: ~/.nlbcli folder didn't exist, created it now.")
+
+
 sess_global = None
 
 
@@ -54,6 +60,9 @@ def login_redirect_detected(response):
 
 
 def load_credentials_from_file():
+    if not os.path.exists(CREDENTIALS_FILE_PATH):
+        print('Error: credentails file not found. Try running `nlbcli login` first.')
+        exit(1)
     with open(CREDENTIALS_FILE_PATH, 'r') as credentials_file:
         return credentials_file.read().split('\n')
 
@@ -86,11 +95,6 @@ def fetch_retry_on_logout(request_func):
         return request_func()  # retry after login
     else:
         return response  # return original response
-
-
-if not os.path.exists(NLBCLI_USER_FOLDER_PATH):
-    os.makedirs(NLBCLI_USER_FOLDER_PATH)
-    print("Info: ~/.nlbcli folder didn't exist, created it now.")
 
 
 if args.command == 'login':
