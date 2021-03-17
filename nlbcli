@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 
-import argparse, sys
+# built-in
+import argparse
+import sys
 import getpass
-import requests as r
 import os
 import pickle
 
+# external pkgs
+import requests as r
+import bs4 as bs
+
 parser = argparse.ArgumentParser()
-parser.add_argument('--version', help='Prints the version of the tool', action='store_true')
-parser.add_argument('login', help='Prompts you for your NLBKlik username/password and remembers them.')
+parser.add_argument('command', choices=["login", "balance"])
+# parser.add_argument('login', help='Prompts you for your NLBKlik username/password and remembers them.')
 # parser.add_argument('balance', help='Prints the balance on all your accounts')
 args = parser.parse_args()
 
@@ -17,35 +22,38 @@ args = parser.parse_args()
 #
 # TODO: replace with cert from https://gist.github.com/filipArena/d73026ea38df5c4bb6263b1a268723c1
 # Thanks filipd!
-VERIFY_SSL=False
-NLBCLI_USER_FOLDER_PATH=os.path.expanduser('~/.nlbcli')
-CREDENTIALS_FILE_PATH=os.path.join(NLBCLI_USER_FOLDER_PATH, 'credentials')
-SESSION_FILE_PATH=os.path.join(NLBCLI_USER_FOLDER_PATH, 'session')
+VERIFY_SSL = False
+NLBCLI_USER_FOLDER_PATH = os.path.expanduser('~/.nlbcli')
+CREDENTIALS_FILE_PATH = os.path.join(NLBCLI_USER_FOLDER_PATH, 'credentials')
+SESSION_FILE_PATH = os.path.join(NLBCLI_USER_FOLDER_PATH, 'session')
 
 if not os.path.exists(NLBCLI_USER_FOLDER_PATH):
-	os.makedirs(NLBCLI_USER_FOLDER_PATH)
-	print("Info: ~/.nlbcli folder didn't exist, created it now.")
+    os.makedirs(NLBCLI_USER_FOLDER_PATH)
+    print("Info: ~/.nlbcli folder didn't exist, created it now.")
 
-if args.version:
-	print('Version: 0.1')
-elif args.login:
-	username = input('Username: ')
-	password = getpass.getpass('Password: ')
-	with open(CREDENTIALS_FILE_PATH, 'w') as credentials_file:
-		credentials_file.write(username + '\n' + password);
-	
-	sess = r.Session()
-	data = {"UserName": username, "Password": password, "X-Requested-With": "XMLHttpRequest"}
-	login_res = sess.post('https://www.nlbklik.com.mk/Account/LoginUserNamePassword', data=data, verify=VERIFY_SSL)
-	
-	# TODO: handle failed login
-	with open(SESSION_FILE_PATH, 'wb') as session_file:
-		pickle.dump(sess, session_file)
+if args.command == 'login':
+    username = input('Username: ')
+    password = getpass.getpass('Password: ')
+    with open(CREDENTIALS_FILE_PATH, 'w') as credentials_file:
+        credentials_file.write(username + '\n' + password)
 
-	print('Info: logged in successfully; saved credentials and session data.')
+    sess = r.Session()
+    data = {"UserName": username, "Password": password,
+            "X-Requested-With": "XMLHttpRequest"}
+    login_res = sess.post(
+        'https://www.nlbklik.com.mk/Account/LoginUserNamePassword', data=data, verify=VERIFY_SSL)
 
+    # TODO: handle failed login
+    with open(SESSION_FILE_PATH, 'wb') as session_file:
+        pickle.dump(sess, session_file)
 
-with open(SESSION_FILE_PATH, 'rb') as session_file:
-	sess = pickle.load(session_file)
-response = sess.get('https://www.nlbklik.com.mk/Home/Index', verify=VERIFY_SSL)
-print(response.text)
+    print('Info: logged in successfully; saved credentials and session data.')
+
+elif args.command == 'balance':
+    with open(SESSION_FILE_PATH, 'rb') as session_file:
+        sess = pickle.load(session_file)
+    response = sess.get(
+        'https://www.nlbklik.com.mk/Retail/Account', verify=VERIFY_SSL)
+    soup = bs.BeautifulSoup(response.text, 'html.parser')
+    for el in soup.select('.widget-main .row'):
+        print(el.get_text())
