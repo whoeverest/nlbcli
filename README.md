@@ -11,7 +11,7 @@ Tested only on Linux.
 
 Clone this repository. `cd` into it.
 
-Run `pip install requests`
+Run `pip install requests bs4`
 
 Log in: `./nlbcli login`
 
