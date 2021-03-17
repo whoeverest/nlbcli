@@ -11,8 +11,10 @@ import pickle
 import requests as r
 import bs4 as bs
 
+
 parser = argparse.ArgumentParser()
-parser.add_argument('command', choices=["login", "balance", "allbalances"])
+parser.add_argument('command', choices=[
+                    "login", "balance", "allbalances"])
 # parser.add_argument('login', help='Prompts you for your NLBKlik username/password and remembers them.')
 # parser.add_argument('balance', help='Prints the balance on all your accounts')
 args = parser.parse_args()
@@ -27,44 +29,101 @@ NLBCLI_USER_FOLDER_PATH = os.path.expanduser('~/.nlbcli')
 CREDENTIALS_FILE_PATH = os.path.join(NLBCLI_USER_FOLDER_PATH, 'credentials')
 SESSION_FILE_PATH = os.path.join(NLBCLI_USER_FOLDER_PATH, 'session')
 
+sess_global = None
+
+
+def save_session_to_file():
+    with open(SESSION_FILE_PATH, 'wb') as session_file:
+        pickle.dump(sess_global, session_file)
+
+
+def load_session_from_file():
+    global sess_global
+    with open(SESSION_FILE_PATH, 'rb') as session_file:
+        sess_global = pickle.load(session_file)
+
+
+if os.path.exists(SESSION_FILE_PATH):
+    load_session_from_file()
+
+
+def login_redirect_detected(response):
+    """ Redirects toward the login page will have a history (302 redirection)
+    which will contain the URL of the login page."""
+    return response.history and '/Account/Login' in response.history[0].text
+
+
+def load_credentials_from_file():
+    with open(CREDENTIALS_FILE_PATH, 'r') as credentials_file:
+        return credentials_file.read().split('\n')
+
+
+def save_credentials_to_file(username, password):
+    with open(CREDENTIALS_FILE_PATH, 'w') as credentials_file:
+        credentials_file.write(username + '\n' + password)
+
+
+def login_with_saved_credentials():
+    global sess_global
+    username, password = load_credentials_from_file()
+    sess = r.Session()
+    data = {"UserName": username, "Password": password,
+            "X-Requested-With": "XMLHttpRequest"}
+    sess.post(
+        'https://www.nlbklik.com.mk/Account/LoginUserNamePassword', data=data, verify=VERIFY_SSL)
+    sess_global = sess
+    save_session_to_file()
+
+
+def fetch_retry_on_logout(request_func):
+    if not sess_global:
+        print('Info: no session detected, attempting to log in first')
+        login_with_saved_credentials()
+    response = request_func()
+    if login_redirect_detected(response):
+        print('Info: logout detected, attempting to log in with saved credentials')
+        login_with_saved_credentials()
+        return request_func()  # retry after login
+    else:
+        return response  # return original response
+
+
 if not os.path.exists(NLBCLI_USER_FOLDER_PATH):
     os.makedirs(NLBCLI_USER_FOLDER_PATH)
     print("Info: ~/.nlbcli folder didn't exist, created it now.")
 
+
 if args.command == 'login':
     username = input('Username: ')
     password = getpass.getpass('Password: ')
-    with open(CREDENTIALS_FILE_PATH, 'w') as credentials_file:
-        credentials_file.write(username + '\n' + password)
-
-    sess = r.Session()
+    save_credentials_to_file(username, password)
+    sess_global = r.Session()
     data = {"UserName": username, "Password": password,
             "X-Requested-With": "XMLHttpRequest"}
-    login_res = sess.post(
+    login_res = sess_global.post(
         'https://www.nlbklik.com.mk/Account/LoginUserNamePassword', data=data, verify=VERIFY_SSL)
 
     # TODO: handle failed login
-    with open(SESSION_FILE_PATH, 'wb') as session_file:
-        pickle.dump(sess, session_file)
+    save_session_to_file()
 
     print('Info: logged in successfully; saved credentials and session data.')
 
 elif args.command == 'balance':
-    with open(SESSION_FILE_PATH, 'rb') as session_file:
-        sess = pickle.load(session_file)
-    response = sess.get(
-        'https://www.nlbklik.com.mk/Retail/Account', verify=VERIFY_SSL)
+    def balance_req():
+        return sess_global.get('https://www.nlbklik.com.mk/Retail/Account', verify=VERIFY_SSL)
+    response = fetch_retry_on_logout(balance_req)
     soup = bs.BeautifulSoup(response.text, 'html.parser')
     for el in soup.select('.widget-main .row'):
         print(el.get_text())
 
 
 elif args.command == 'allbalances':
-    with open(SESSION_FILE_PATH, 'rb') as session_file:
-        sess = pickle.load(session_file)
-    response = sess.post(
-        'https://www.nlbklik.com.mk/Home/AllBalances', verify=VERIFY_SSL)
-    soup = bs.BeautifulSoup('<html><body>' + response.text + '</body></html>', 'html.parser')
+    def allbalances_req():
+        return sess_global.post(
+            'https://www.nlbklik.com.mk/Home/AllBalances', verify=VERIFY_SSL)
+    response = fetch_retry_on_logout(allbalances_req)
+    soup = bs.BeautifulSoup(
+        '<html><body>' + response.text + '</body></html>', 'html.parser')
 
     found = False
     for el in soup.select('.table-responsive > table > tbody > tr'):
