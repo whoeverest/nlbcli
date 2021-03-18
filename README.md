@@ -19,6 +19,8 @@ This will prompt you for your username and password, and store them in `~/.nlbcl
 
 Sessions expire quite fast, but the tool will automatically log you back in when it detects an expired session. It'll happen in the background.
 
-Check your balance by typing `./nlbcli balance`
+List your account IDs: `./nlbcli accounts`
+
+Get account details: `./nlbcli accounts --id $ACCOUNT_ID`
 
 Optionally, create a symlink: `sudo ln -s /home/path/to/nlbcli/nlbcli /usr/local/bin`.
