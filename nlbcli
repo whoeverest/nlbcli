@@ -6,6 +6,7 @@ import sys
 import getpass
 import os
 import pickle
+import re
 
 # external pkgs
 import requests as r
@@ -13,10 +14,19 @@ import bs4 as bs
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('command', choices=[
-                    "login", "balance", "allbalances"])
-# parser.add_argument('login', help='Prompts you for your NLBKlik username/password and remembers them.')
-# parser.add_argument('balance', help='Prints the balance on all your accounts')
+subparsers = parser.add_subparsers(dest='subparser_name')
+login_parser = subparsers.add_parser(
+    'login', help='Log in and save your credentials')
+
+# accounts
+accounts_parser = subparsers.add_parser(
+    'accounts', help='Tools for working with your bank accounts')
+accounts_parser.add_argument('--id')
+
+# cards
+cards_parser = subparsers.add_parser(
+    'cards', help='Tools for working with your cards')
+cards_parser.add_argument('--id')
 args = parser.parse_args()
 
 # Unfortunately, NLB's certificate is invalid, as it's not including an intermediate
@@ -24,7 +34,7 @@ args = parser.parse_args()
 #
 # TODO: replace with cert from https://gist.github.com/filipArena/d73026ea38df5c4bb6263b1a268723c1
 # Thanks filipd!
-VERIFY_SSL = False
+VERIFY_SSL = False  # todo: point to certificate
 NLBCLI_USER_FOLDER_PATH = os.path.expanduser('~/.nlbcli')
 CREDENTIALS_FILE_PATH = os.path.join(NLBCLI_USER_FOLDER_PATH, 'credentials')
 SESSION_FILE_PATH = os.path.join(NLBCLI_USER_FOLDER_PATH, 'session')
@@ -97,7 +107,7 @@ def fetch_retry_on_logout(request_func):
         return response  # return original response
 
 
-if args.command == 'login':
+if args.subparser_name == 'login':
     username = input('Username: ')
     password = getpass.getpass('Password: ')
     save_credentials_to_file(username, password)
@@ -112,55 +122,67 @@ if args.command == 'login':
 
     print('Info: logged in successfully; saved credentials and session data.')
 
-elif args.command == 'balance':
-    def balance_req():
-        return sess_global.get('https://www.nlbklik.com.mk/Retail/Account', verify=VERIFY_SSL)
-    response = fetch_retry_on_logout(balance_req)
-    soup = bs.BeautifulSoup(response.text, 'html.parser')
-    for el in soup.select('.widget-main .row'):
-        print(el.get_text())
+elif args.subparser_name == 'accounts':
+    if args.id:
+        def retail_account_req():
+            data = {"ignoreSettingContextAccount": "False",
+                    "SaveFilter": "False",
+                    "RemoveFilter": "False",
+                    "PageNumber": "",
+                    "PageSize": "",
+                    "DetailsView": "0",
+                    "SelectedItem": "",
+                    "PageId": "",
+                    "IsWidget": "False",
+                    "AccountID": args.id,
+                    "Report": "",
+                    "X-Requested-With": "XMLHttpRequest"}
+            return sess_global.post('https://www.nlbklik.com.mk/Retail/Account', data=data, verify=VERIFY_SSL)
+        response = fetch_retry_on_logout(retail_account_req)
+        soup = bs.BeautifulSoup(response.text, 'html.parser')
+        table_cells = soup.select('.dps-content')
+        print('Account owner:', table_cells[0].text)
+        print('Status:', table_cells[1].text)
+        print('Current balance:', table_cells[3].text)
+        print('Available balance:', table_cells[5].text)
+        print('Allowed overdraft:', table_cells[7].text)
+        print('Reserved funds:', table_cells[9].text)
+        print('Last change:', table_cells[13].text)
+        print('Last interest:', table_cells[15].text)
 
+    else:
+        def home_balances_req():
+            return sess_global.get('https://www.nlbklik.com.mk/Home/Balances?bankid=tutunska.banka@ibank', verify=VERIFY_SSL)
+        response = fetch_retry_on_logout(home_balances_req)
+        soup = bs.BeautifulSoup(response.text, 'html.parser')
+        account_id_regex = r'[0-9]{3}-[0-9]{10}-[0-9]{2}[A-Z]{2,3}'
+        for line in re.findall(account_id_regex, soup.text):
+            print(line)
 
-elif args.command == 'allbalances':
-    def allbalances_req():
-        return sess_global.post(
-            'https://www.nlbklik.com.mk/Home/AllBalances', verify=VERIFY_SSL)
-    response = fetch_retry_on_logout(allbalances_req)
-    soup = bs.BeautifulSoup(
-        '<html><body>' + response.text + '</body></html>', 'html.parser')
-
-    found = False
-    for el in soup.select('.table-responsive > table > tbody > tr'):
-        if (el.get('class') == 'collapse'):
-            continue
-
-        tdname = el.find('td')
-
-        tdimg = tdname.find_next_sibling()
-        if (tdimg == None):
-            continue
-
-        divnum = tdname.find('div')
-        divname = divnum.find_next_sibling()
-
-        accnum = divnum.get_text().strip()
-        accname = divname.get_text().strip()
-
-        iscard = accname.find('Трансакциска') == -1
-
-        print("Number: " + accnum)
-        print(('Card Name: ' if iscard == True else 'Account Name: ') + accname)
-
-        tdbalance = tdimg.find_next_sibling()
-        balanceval = tdbalance.get_text().strip()
-        print("Balance: " + balanceval)
-
-        tdother = tdbalance.find_next_sibling()
-        otherval = tdother.get_text().strip()
-        print(('Available: ' if iscard == True else 'Last Change: ') + otherval)
-
-        found = True
-        print('')
-
-    if (found == False):
-        print("DID NOT FIND ANYTHING, PROBABLY NOT LOGGED IN!")
+elif args.subparser_name == 'cards':
+    if args.id:
+        def cms_account_req():
+            data = {"ignoreSettingContextAccount": "False",
+                    "SaveFilter": "False",
+                    "RemoveFilter": "False",
+                    "PageNumber": "",
+                    "PageSize": "",
+                    "DetailsView": "0",
+                    "SelectedItem": "",
+                    "PageId": "",
+                    "IsWidget": "False",
+                    "AccountID": args.id,
+                    "Report": "",
+                    "X-Requested-With": "XMLHttpRequest"}
+            return sess_global.post('https://www.nlbklik.com.mk/Cms/Account', data=data, verify=VERIFY_SSL)
+        # response = fetch_retry_on_logout(cms_account_req)
+        # soup = bs.BeautifulSoup(response.text, 'html.parser')
+        print('Not implemented yet.')
+    else:
+        def home_balances_req():
+            return sess_global.get('https://www.nlbklik.com.mk/Home/Balances?bankid=tutunska.banka@ibank', verify=VERIFY_SSL)
+        response = fetch_retry_on_logout(home_balances_req)
+        soup = bs.BeautifulSoup(response.text, 'html.parser')
+        card_id_regex = r'[0-9]{8,15}/[0-9]{4}'
+        for line in re.findall(card_id_regex, soup.text):
+            print(line)
