@@ -12,10 +12,10 @@ To install just run:
 pip install git+https://github.com/whoeverest/nlbcli.git
 ```
 
-Now `nlbcli` should be available as an executable in your shell. If you are installing with the `--user` flag, you might need to change your `$PATH` such that it contains `~/.local/bin`
+Now `nlbcli` should be available as an executable in your shell. If using pip w/ `--user` flag, make sure `~/.local/bin` is in `$PATH`
 
 * Log in: `./nlbcli login`
-    * will get stored in `~/.nlbcli/credentials`
+    * credentials get stored in `~/.nlbcli/credentials`
     * sessions expire quite fast, but the tool will automatically log you back in when it detects an expired session.
 * List your account IDs: `./nlbcli accounts`
 * Get account details: `./nlbcli accounts --id $ACCOUNT_ID`
@@ -25,4 +25,4 @@ Now `nlbcli` should be available as an executable in your shell. If you are inst
 1. Clone the GitHub repository
 2. Run `pip install --editable .` to create a editable/dev install
 3. Perform changes in `nlbcli/`
-4. Changes will picked up when running `nlbcli` or `python nlbcli/__init__.py` without re-doing `install`
+4. Changes will picked up when running `nlbcli` or `python nlbcli/__init__.py` without re-doing `pip install`
