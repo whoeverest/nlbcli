@@ -12,6 +12,8 @@ To install just run:
 pip install git+https://github.com/whoeverest/nlbcli.git
 ```
 
+If the install fails because of write permissions, try using `sudo`.
+
 Now `nlbcli` should be available as an executable in your shell. If using pip w/ `--user` flag, make sure `~/.local/bin` is in `$PATH`
 
 * Log in: `nlbcli login`
