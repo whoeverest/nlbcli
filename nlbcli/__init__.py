@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 # built-in
+import bs4 as bs
+import requests as r
 import argparse
 import sys
 import getpass
@@ -16,8 +18,6 @@ VERIFY_SSL = pkg_resources.resource_filename('nlbcli', 'nlbklik-chain.pem')
 
 
 # external pkgs
-import requests as r
-import bs4 as bs
 
 
 parser = argparse.ArgumentParser()
@@ -64,9 +64,7 @@ if os.path.exists(SESSION_FILE_PATH):
 
 
 def login_redirect_detected(response):
-    """ Redirects toward the login page will have a history (302 redirection)
-    which will contain the URL of the login page."""
-    return response.history and '/Account/Login' in response.history[0].text
+    return response.status_code == 302
 
 
 def load_credentials_from_file():
@@ -83,15 +81,22 @@ def save_credentials_to_file(username, password):
 
 
 def login_with_saved_credentials():
-    global sess_global
     username, password = load_credentials_from_file()
     sess = r.Session()
     data = {"UserName": username, "Password": password,
             "X-Requested-With": "XMLHttpRequest"}
-    sess.post(
-        'https://www.nlbklik.com.mk/Account/LoginUserNamePassword', data=data, verify=VERIFY_SSL)
-    sess_global = sess
-    save_session_to_file()
+    login_res = sess.post(
+        'https://www.nlbklik.com.mk/Account/LoginUserNamePassword', data=data, verify=VERIFY_SSL, allow_redirects=False)
+    login_json_body = login_res.json()
+
+    # Response always contains 'ErrorMessage' key and has status code 200, unfortunately.
+    if login_json_body['ErrorMessage'] != None:
+        print("Error: failed to log in.")
+        print("Response from server: " + login_res.json()['ErrorMessage'])
+        exit(1)
+    else:
+        save_session_to_file()
+        print('Info: logged in successfully; saved credentials and session data.')
 
 
 def fetch_retry_on_logout(request_func):
@@ -118,8 +123,8 @@ def main():
         sess_global = r.Session()
         data = {"UserName": username, "Password": password,
                 "X-Requested-With": "XMLHttpRequest"}
-        login_res = sess_global.post(
-            'https://www.nlbklik.com.mk/Account/LoginUserNamePassword', data=data, verify=VERIFY_SSL)
+        sess_global.post(
+            'https://www.nlbklik.com.mk/Account/LoginUserNamePassword', data=data, verify=VERIFY_SSL, allow_redirects=False)
 
         # TODO: handle failed login
         save_session_to_file()
@@ -141,7 +146,7 @@ def main():
                         "AccountID": args.id,
                         "Report": "",
                         "X-Requested-With": "XMLHttpRequest"}
-                return sess_global.post('https://www.nlbklik.com.mk/Retail/Account', data=data, verify=VERIFY_SSL)
+                return sess_global.post('https://www.nlbklik.com.mk/Retail/Account', data=data, verify=VERIFY_SSL, allow_redirects=False)
             response = fetch_retry_on_logout(retail_account_req)
             soup = bs.BeautifulSoup(response.text, 'html.parser')
             table_cells = soup.select('.dps-content')
@@ -156,7 +161,7 @@ def main():
 
         else:
             def home_balances_req():
-                return sess_global.get('https://www.nlbklik.com.mk/Home/Balances?bankid=tutunska.banka@ibank', verify=VERIFY_SSL)
+                return sess_global.get('https://www.nlbklik.com.mk/Home/Balances?bankid=tutunska.banka@ibank', verify=VERIFY_SSL, allow_redirects=False)
             response = fetch_retry_on_logout(home_balances_req)
             soup = bs.BeautifulSoup(response.text, 'html.parser')
             account_id_regex = r'[0-9]{3}-[0-9]{10}-[0-9]{2}[A-Z]{2,3}'
@@ -178,13 +183,13 @@ def main():
                         "AccountID": args.id,
                         "Report": "",
                         "X-Requested-With": "XMLHttpRequest"}
-                return sess_global.post('https://www.nlbklik.com.mk/Cms/Account', data=data, verify=VERIFY_SSL)
+                return sess_global.post('https://www.nlbklik.com.mk/Cms/Account', data=data, verify=VERIFY_SSL, allow_redirects=False)
             # response = fetch_retry_on_logout(cms_account_req)
             # soup = bs.BeautifulSoup(response.text, 'html.parser')
-            print('Not implemented yet.')
+            print('Error: not implemented yet.')
         else:
             def home_balances_req():
-                return sess_global.get('https://www.nlbklik.com.mk/Home/Balances?bankid=tutunska.banka@ibank', verify=VERIFY_SSL)
+                return sess_global.get('https://www.nlbklik.com.mk/Home/Balances?bankid=tutunska.banka@ibank', verify=VERIFY_SSL, allow_redirects=False)
             response = fetch_retry_on_logout(home_balances_req)
             soup = bs.BeautifulSoup(response.text, 'html.parser')
             card_id_regex = r'[0-9]{8,15}/[0-9]{4}'
@@ -194,4 +199,6 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-if __name__ == '__main__': main()
+
+if __name__ == '__main__':
+    main()
