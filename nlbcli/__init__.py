@@ -12,9 +12,9 @@ import re
 import pkg_resources
 
 # local files
-from .lib import constants
-from .lib.args_parser import parsed_args, parser
-from .lib.session import login_and_save_credentials, nlb_post, nlb_get
+from . import constants
+from .args_parser import parsed_args, parser
+from .session import login_and_save_credentials, nlb_post, nlb_get
 
 # create state folder if it doesn't exist
 if not os.path.exists(constants.NLBCLI_USER_FOLDER_PATH):
