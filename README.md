@@ -8,19 +8,18 @@ Things like checking your balance, listing transations etc.
 ## Getting started
 
 To install just run:
+
 ```bash
 pip install git+https://github.com/whoeverest/nlbcli.git
 ```
 
-If the install fails because of write permissions, try using `sudo`.
-
 Now `nlbcli` should be available as an executable in your shell. If using pip w/ `--user` flag, make sure `~/.local/bin` is in `$PATH`
 
-* Log in: `nlbcli login`
-    * credentials get stored in `~/.nlbcli/credentials`
-    * sessions expire quite fast, but the tool will automatically log you back in when it detects an expired session.
-* List your account IDs: `nlbcli accounts`
-* Get account details: `nlbcli accounts --id $ACCOUNT_ID`
+- Log in: `nlbcli login`
+  - credentials get stored in `~/.nlbcli/credentials`
+  - sessions expire quite fast, but the tool will automatically log you back in when it detects an expired session.
+- List your account IDs: `nlbcli accounts`
+- Get account details: `nlbcli accounts --id $ACCOUNT_ID`
 
 ## Install in development mode
 
