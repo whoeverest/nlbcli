@@ -4,9 +4,7 @@
 import sys
 import getpass
 import os
-import pickle
 import re
-import pkg_resources
 
 # local files
 from . import constants
