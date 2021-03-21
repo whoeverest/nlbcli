@@ -1,6 +1,7 @@
 import os
 import pickle
 import requests as r
+import bs4 as bs
 
 from . import constants
 
@@ -88,16 +89,25 @@ def login_and_save_credentials(username, password):
 
 
 def nlb_post(url, data):
-    """ Performs a POST requests; auto-renews expired sessions. """
+    """
+    Performs a POST requests; auto-renews expired sessions.
+    Returns a tuple: the response and the parsed html body."""
     def req_fn(sess):
         return sess.post(
             url, data=data, verify=constants.VERIFY_SSL, allow_redirects=False)
-    return _fetch_with_autorenewal(req_fn)
+    response = _fetch_with_autorenewal(req_fn)
+    soup = bs.BeautifulSoup(response.text, 'html.parser')
+    return (response, soup)
 
 
 def nlb_get(url):
-    """ Performs a GET requests; auto-renews expired sessions. """
+    """
+    Performs a GET requests; auto-renews expired sessions.
+    Returns a tuple: the response and the parsed html body.
+    """
     def req_fn(sess):
         return sess.get(url, verify=constants.VERIFY_SSL,
                         allow_redirects=False)
-    return _fetch_with_autorenewal(req_fn)
+    response = _fetch_with_autorenewal(req_fn)
+    soup = bs.BeautifulSoup(response.text, 'html.parser')
+    return (response, soup)
