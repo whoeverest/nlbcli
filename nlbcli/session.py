@@ -7,9 +7,6 @@ from . import constants
 
 
 def _save_session_to_file(sess):
-    if not os.path.exists(constants.SESSION_FILE_PATH):
-        print('Error: session file not found; try running `nlbcli login` first.')
-        exit(1)
     with open(constants.SESSION_FILE_PATH, 'wb') as session_file:
         pickle.dump(sess, session_file)
 
