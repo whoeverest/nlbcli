@@ -68,6 +68,18 @@ def main():
             print(line)
 
     elif parsed_args.subparser_name == 'transactions':
+        # direction explanation:
+        # 0 means 'both debit and credit'; 1 means 'credit'; -1 means 'debit'
+        direction = "0"
+        if parsed_args.type:
+            direction = "1" if parsed_args.type == 'in' else "-1"
+
+        # counterparty name
+        # todo: this isn't working for some inexplicable reason
+        other_party_name = ""
+        if parsed_args.name:
+            other_party_name = parsed_args.name.replace(' ', '+')
+
         url = 'https://www.nlbklik.com.mk/Retail/Transactions'
         data = {
             "ignoreSettingContextAccount": "False",
@@ -80,14 +92,14 @@ def main():
             "PageId": "",
             "IsWidget": "False",
             "AccountID": parsed_args.account_id,
-            "DateFrom": "21.02.2021",  # todo: remove hardcoded value
-            "DateTo": "21.03.2021",  # todo: remove hardcoded value
-            "Direction": "0",
+            "DateFrom": parsed_args.start,  # todo: validation
+            "DateTo": parsed_args.end,  # todo: validation
+            "Direction": direction,
             "AmountCondition": "",
             "AmountFrom": "",
             "Amount": "",
             "AmountTo": "",
-            "OtherPartyName": "",
+            "OtherPartyName": other_party_name,
             "OtherPartyAccount": "",
             "TransactionsForPrint": "",
             "SortColumn": "Date",

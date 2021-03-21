@@ -17,5 +17,11 @@ cards_parser = subparsers.add_parser('cards', help='List cards...')
 transactions_parser = subparsers.add_parser(
     'transactions', help='List and filter transactions, get transaction details...')
 transactions_parser.add_argument('account_id')
-
+transactions_parser.add_argument(
+    '--start', required=False, default="21.02.2021")  # todo: base on today's date
+transactions_parser.add_argument(
+    '--end', required=False, default="21.03.2021")  # todo: base on today's date
+transactions_parser.add_argument(
+    '--type', choices=['in', 'out'], required=False)
+transactions_parser.add_argument('--name', required=False)
 parsed_args = parser.parse_args()
