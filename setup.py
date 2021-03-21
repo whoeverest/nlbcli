@@ -10,7 +10,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     python_requires=">=3.5",
     entry_points = {
-        'console_scripts': ['nlbcli=nlbcli:main']
+        'console_scripts': ['nlbcli=nlbcli.__main__:main']
     },
     install_requires=[
         'requests>=2.25.0',
