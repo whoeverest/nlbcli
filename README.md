@@ -19,7 +19,8 @@ Now `nlbcli` should be available as an executable in your shell. If using pip w/
   - credentials get stored in `~/.nlbcli/credentials`
   - sessions expire quite fast, but the tool will automatically log you back in when it detects an expired session.
 - List your account IDs: `nlbcli accounts`
-- Get account details: `nlbcli accounts --id $ACCOUNT_ID`
+- Get account details: `nlbcli accounts $ACCOUNT_ID`
+- List transactions: `nlbcli transactions $ACCOUNT_ID`
 
 ## Install in development mode
 
