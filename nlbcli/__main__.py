@@ -24,7 +24,7 @@ def main():
         login_and_save_credentials(username, password)
 
     elif parsed_args.subparser_name == 'accounts':
-        if parsed_args.account_id:
+        if parsed_args.accounts_subparser_name == 'balance':
             data = {"ignoreSettingContextAccount": "False",
                     "SaveFilter": "False",
                     "RemoveFilter": "False",
@@ -51,7 +51,56 @@ def main():
             print('Last change:', table_cells[13].text)
             print('Last interest:', table_cells[15].text)
 
+        elif parsed_args.accounts_subparser_name == 'transactions':
+            # direction explanation:
+            # 0 means 'both debit and credit'; 1 means 'credit'; -1 means 'debit'
+            direction = "0"
+            if parsed_args.type:
+                direction = "1" if parsed_args.type == 'in' else "-1"
+
+            # counterparty name
+            # todo: this isn't working for some inexplicable reason
+            other_party_name = ""
+            if parsed_args.name:
+                other_party_name = parsed_args.name
+
+            url = 'https://www.nlbklik.com.mk/Retail/Transactions'
+            data = {
+                "ignoreSettingContextAccount": "False",
+                "SaveFilter": "False",
+                "RemoveFilter": "False",
+                "PageNumber": "",
+                "PageSize": "",
+                "DetailsView": "0",
+                "SelectedItem": "",
+                "PageId": "",
+                "IsWidget": "False",
+                "AccountID": parsed_args.account_id,
+                "DateFrom": parsed_args.start,  # todo: validation
+                "DateTo": parsed_args.end,  # todo: validation
+                "Direction": direction,
+                "AmountCondition": "",
+                "AmountFrom": "",
+                "Amount": "",
+                "AmountTo": "",
+                "OtherPartyName": other_party_name,
+                "OtherPartyAccount": "",
+                "TransactionsForPrint": "",
+                "SortColumn": "Date",
+                "SortDirection": "DESC",
+                "Report": "",
+                "X-Requested-With": "XMLHttpRequest"
+            }
+            _, soup = nlb_post(url, data)
+
+            # we print all cells except the "Details" link/button
+            # todo: parse the 0th column to extract the unique transaction id
+            for tr in soup.select('tbody > tr'):
+                tds = tr.select('td')[1:]
+                print('\t'.join(td.text.strip() for td in tds))
+
         else:
+            # list accounts
             url = 'https://www.nlbklik.com.mk/Home/Balances?bankid=tutunska.banka@ibank'
             _, soup = nlb_get(url)
             account_id_regex = r'[0-9]{3}-[0-9]{10}-[0-9]{2}[A-Z]{2,3}'
@@ -59,59 +108,19 @@ def main():
                 print(line)
 
     elif parsed_args.subparser_name == 'cards':
-        url = 'https://www.nlbklik.com.mk/Home/Balances?bankid=tutunska.banka@ibank'
-        _, soup = nlb_get(url)
-        card_id_regex = r'[0-9]{8,15}/[0-9]{4}'
-        for line in re.findall(card_id_regex, soup.text):
-            print(line)
+        if parsed_args.cards_subparser_name == 'balance':
+            print('Error: card balance not implemented yet.')
 
-    elif parsed_args.subparser_name == 'transactions':
-        # direction explanation:
-        # 0 means 'both debit and credit'; 1 means 'credit'; -1 means 'debit'
-        direction = "0"
-        if parsed_args.type:
-            direction = "1" if parsed_args.type == 'in' else "-1"
+        elif parsed_args.cards_subparser_name == 'transactions':
+            print('Error: listing transactions not implemented yet.')
 
-        # counterparty name
-        # todo: this isn't working for some inexplicable reason
-        other_party_name = ""
-        if parsed_args.name:
-            other_party_name = parsed_args.name.replace(' ', '+')
+        else:
+            url = 'https://www.nlbklik.com.mk/Home/Balances?bankid=tutunska.banka@ibank'
+            _, soup = nlb_get(url)
+            card_id_regex = r'[0-9]{8,15}/[0-9]{4}'
+            for line in re.findall(card_id_regex, soup.text):
+                print(line)
 
-        url = 'https://www.nlbklik.com.mk/Retail/Transactions'
-        data = {
-            "ignoreSettingContextAccount": "False",
-            "SaveFilter": "False",
-            "RemoveFilter": "False",
-            "PageNumber": "",
-            "PageSize": "",
-            "DetailsView": "0",
-            "SelectedItem": "",
-            "PageId": "",
-            "IsWidget": "False",
-            "AccountID": parsed_args.account_id,
-            "DateFrom": parsed_args.start,  # todo: validation
-            "DateTo": parsed_args.end,  # todo: validation
-            "Direction": direction,
-            "AmountCondition": "",
-            "AmountFrom": "",
-            "Amount": "",
-            "AmountTo": "",
-            "OtherPartyName": other_party_name,
-            "OtherPartyAccount": "",
-            "TransactionsForPrint": "",
-            "SortColumn": "Date",
-            "SortDirection": "DESC",
-            "Report": "",
-            "X-Requested-With": "XMLHttpRequest"
-        }
-        _, soup = nlb_post(url, data)
-
-        # we print all cells except the "Details" link/button
-        # todo: parse the 0th column to extract the unique transaction id
-        for tr in soup.select('tbody > tr'):
-            tds = tr.select('td')[1:]
-            print('\t'.join(td.text.strip() for td in tds))
     else:
         parser.print_help()
         sys.exit(1)
