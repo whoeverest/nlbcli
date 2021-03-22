@@ -27,6 +27,10 @@ transactions_parser.add_argument('--name', required=False)
 balance_parser = accounts_subparsers.add_parser(
     'balance', help="Show the balance on the specified account")
 
+# ACCOUNtS [id] reservations
+reservations_parser = accounts_subparsers.add_parser(
+    'reservations', help="List reserved funds")
+
 # CARDS
 cards_parser = main_subparsers.add_parser('cards', help='List cards')
 cards_parser.add_argument('card_id', nargs='?')

@@ -99,6 +99,27 @@ def main():
                 tds = tr.select('td')[1:]
                 print('\t'.join(td.text.strip() for td in tds))
 
+        elif parsed_args.accounts_subparser_name == 'reservations':
+            url = 'https://www.nlbklik.com.mk/Retail/ReservationList'
+            data = {"ignoreSettingContextAccount": "False",
+                    "SaveFilter": "False",
+                    "RemoveFilter": "False",
+                    "PageNumber": "",
+                    "PageSize": "20",
+                    "DetailsView": "0",
+                    "SelectedItem": "",
+                    "PageId": "",
+                    "IsWidget": "False",
+                    "AccountID": parsed_args.account_id,
+                    "SortColumn": "Date",
+                    "SortDirection": "DESC",
+                    "Report": "",
+                    "X-Requested-With": "XMLHttpRequest"}
+            _, soup = nlb_post(url, data)
+            for tr in soup.select('tbody > tr'):
+                tds = tr.select('td')
+                print('\t'.join(td.text.strip() for td in tds))
+
         else:
             # list accounts
             url = 'https://www.nlbklik.com.mk/Home/Balances?bankid=tutunska.banka@ibank'
