@@ -133,7 +133,33 @@ def main():
             print('Error: card balance not implemented yet.')
 
         elif parsed_args.cards_subparser_name == 'transactions':
-            print('Error: listing transactions not implemented yet.')
+            url = 'https://www.nlbklik.com.mk/Cms/Transactions'
+            data = {"ignoreSettingContextAccount": "False",
+                    "SaveFilter": "False",
+                    "RemoveFilter": "False",
+                    "PageNumber": "",
+                    "PageSize": "20",
+                    "DetailsView": "0",
+                    "SelectedItem": "",
+                    "PageId": "",
+                    "IsWidget": "False",
+                    "AccountID": parsed_args.card_id,
+                    "DateFrom": "22.02.2021",  # todo: not hardcoded
+                    "DateTo": "22.03.2021",  # todo: not hardcoded
+                    "CardNumber": "",
+                    "AmountCondition": "",
+                    "AmountFrom": "",
+                    "Amount": "",
+                    "AmountTo": "",
+                    "TrnDescription": "",
+                    "SortColumn": "Date",
+                    "SortDirection": "DESC",
+                    "Report": "",
+                    "X-Requested-With": "XMLHttpRequest"}
+            _, soup = nlb_post(url, data)
+            for tr in soup.select('tbody > tr'):
+                tds = tr.select('td')
+                print('\t'.join(td.text.strip() for td in tds))
 
         else:
             url = 'https://www.nlbklik.com.mk/Home/Balances?bankid=tutunska.banka@ibank'
