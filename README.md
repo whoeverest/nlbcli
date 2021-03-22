@@ -21,6 +21,7 @@ Now `nlbcli` should be available as an executable in your shell. If using pip w/
 - List recent transactions: `nlbcli accounts $ACCOUNT_ID transactions`
 - Filter transactions: `nlbcli accounts $ACCOUNT_ID transactions --start="01.01.2019" --end="30.01.2019" --name="EVN"`
 - List cards: `nlbcli cards`
+- Reserved funds (recent transactions): `nlbcli accounts $ACCOUNT_ID reservations`
 
 Running `nlbcli -h` will show you all the available commands.
 
