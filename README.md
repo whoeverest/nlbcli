@@ -32,7 +32,7 @@ Each command has it's own help section: `nlbcli accounts -h` or `nlbcli accounts
 1. Clone the GitHub repository
 2. Run `pip install --editable .` to create a editable/dev install
 3. Perform code changes in `nlbcli/`
-4. Changes will picked up when running `nlbcli` or `python nlbcli/__init__.py` without re-doing `pip install`
+4. Changes will picked up when running `nlbcli` without re-doing `pip install`
 
 # How it works
 
