@@ -16,11 +16,15 @@ pip install git+https://github.com/whoeverest/nlbcli.git
 Now `nlbcli` should be available as an executable in your shell. If using pip w/ `--user` flag, make sure `~/.local/bin` is in `$PATH`
 
 - Log in: `nlbcli login`
-  - credentials get stored in `~/.nlbcli/credentials`
-  - sessions expire quite fast, but the tool will automatically log you back in when it detects an expired session.
 - List your account IDs: `nlbcli accounts`
-- Get account details: `nlbcli accounts $ACCOUNT_ID`
-- List transactions: `nlbcli transactions $ACCOUNT_ID`
+- See the balance on one account: `nlbcli accounts $ACCOUNT_ID balance`
+- List recent transactions: `nlbcli accounts $ACCOUNT_ID transactions`
+- Filter transactions: `nlbcli accounts $ACCOUNT_ID transactions --start="01.01.2019" --end="30.01.2019" --name="EVN"`
+- List cards: `nlbcli cards`
+
+Running `nlbcli -h` will show you all the available commands.
+
+Each command has it's own help section: `nlbcli accounts -h` or `nlbcli accounts $ACCOUNT_ID transactions -h`
 
 ## Install in development mode
 
