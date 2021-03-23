@@ -2,6 +2,7 @@ import os
 import pickle
 import requests as r
 import bs4 as bs
+import getpass
 
 from . import constants
 
@@ -31,6 +32,10 @@ def _load_credentials_from_file():
 def _save_credentials_to_file(username, password):
     with open(constants.CREDENTIALS_FILE_PATH, 'w') as credentials_file:
         credentials_file.write(username + '\n' + password)
+
+
+def _credentials_file_exists():
+    return os.path.exists(constants.CREDENTIALS_FILE_PATH)
 
 
 def _login(username, password):
@@ -67,8 +72,13 @@ def _fetch_with_autorenewal(req_fn):
     old_session = _load_session_from_file()
     response = req_fn(old_session)
     if _login_redirect_detected(response):
-        print('Info: logout detected, attempting to log in with saved credentials')
-        new_session = _login_with_saved_credentials()
+        print('Info: logout detected, attempting to log in')
+        if _credentials_file_exists():
+            print('Info: using saved credentials.')
+            new_session = _login_with_saved_credentials()
+        else:
+            username, password = prompt_for_credentials()
+            new_session = _login(username, password)
         response = req_fn(new_session)  # retry after login
         _save_session_to_file(new_session)
     else:
@@ -76,13 +86,22 @@ def _fetch_with_autorenewal(req_fn):
     return response
 
 
-def login_and_save_credentials(username, password):
-    """ Performs a log in, and saves the credentials in a file, where they'll be
-    read and used again in case of an expired session."""
+def prompt_for_credentials():
+    username = input('Username: ')
+    password = getpass.getpass('Password: ')
+    return (username, password)
+
+
+def login_and_remember_credentials(username, password, remember_credentials=False):
+    """ Performs a log in, and optionally saves the credentials in a file,
+    where they can be read and used again in case of an expired session."""
     new_session = _login(username, password)
-    _save_credentials_to_file(username, password)
+    if remember_credentials:
+        print('Info: saved credentials at: ' + constants.CREDENTIALS_FILE_PATH)
+        _save_credentials_to_file(username, password)
     _save_session_to_file(new_session)
-    print('Info: logged in successfully; saved credentials and session data.')
+    print('Info: logged in successfully, saved session data at: ' +
+          constants.SESSION_FILE_PATH)
 
 
 def nlb_post(url, data):

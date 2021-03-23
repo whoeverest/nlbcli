@@ -4,6 +4,8 @@ parser = argparse.ArgumentParser()
 main_subparsers = parser.add_subparsers(dest='subparser_name')
 login_parser = main_subparsers.add_parser(
     'login', help='Log in and save your credentials.')
+login_parser.add_argument(
+    '--remember', dest="remember_credentials",  action="store_true", help="Save credentials; enables automatically re-authenticating on expired session.")
 
 # ACCOUNTS
 accounts_parser = main_subparsers.add_parser(
