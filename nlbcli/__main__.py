@@ -4,6 +4,7 @@
 import sys
 import os
 import re
+from datetime import date, timedelta
 
 # local files
 from . import constants
@@ -132,6 +133,8 @@ def main():
             print('Error: card balance not implemented yet.')
 
         elif parsed_args.cards_subparser_name == 'transactions':
+            today = date.today()
+            month_ago = today - timedelta(days=30)
             url = 'https://www.nlbklik.com.mk/Cms/Transactions'
             data = {"ignoreSettingContextAccount": "False",
                     "SaveFilter": "False",
@@ -143,8 +146,8 @@ def main():
                     "PageId": "",
                     "IsWidget": "False",
                     "AccountID": parsed_args.card_id,
-                    "DateFrom": "22.02.2021",  # todo: not hardcoded
-                    "DateTo": "22.03.2021",  # todo: not hardcoded
+                    "DateFrom": month_ago.strftime(constants.DATES_FORMAT),
+                    "DateTo": today.strftime(constants.DATES_FORMAT),
                     "CardNumber": "",
                     "AmountCondition": "",
                     "AmountFrom": "",

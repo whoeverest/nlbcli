@@ -1,4 +1,10 @@
 import argparse
+from datetime import date, timedelta
+
+from .constants import DATES_FORMAT
+
+today = date.today()
+month_ago = today - timedelta(days=30)
 
 parser = argparse.ArgumentParser()
 main_subparsers = parser.add_subparsers(dest='subparser_name')
@@ -18,9 +24,9 @@ accounts_subparsers = accounts_parser.add_subparsers(
 transactions_parser = accounts_subparsers.add_parser(
     'transactions', help='List and filter transactions')
 transactions_parser.add_argument(
-    '--start', required=False, default="21.02.2021")  # todo: base on today's date
+    '--start', required=False, default=month_ago.strftime(DATES_FORMAT))
 transactions_parser.add_argument(
-    '--end', required=False, default="21.03.2021")  # todo: base on today's date
+    '--end', required=False, default=today.strftime(DATES_FORMAT))
 transactions_parser.add_argument(
     '--type', choices=['in', 'out'], required=False)
 transactions_parser.add_argument('--name', required=False)
