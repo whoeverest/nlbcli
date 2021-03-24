@@ -7,6 +7,10 @@ import getpass
 from . import constants
 
 
+class ResponseErrorException(Exception):
+    pass
+
+
 def _save_session_to_file(sess):
     with open(constants.SESSION_FILE_PATH, 'wb') as session_file:
         pickle.dump(sess, session_file)
@@ -51,7 +55,8 @@ def _login(username, password):
     # Response always contains 'ErrorMessage' key and has status code 200, unfortunately.
     if login_json_body['ErrorMessage'] != None:
         response_msg = login_res.json()['ErrorMessage']
-        raise Exception(response_msg)
+        raise ResponseErrorException(
+            'Server returned an error: ' + response_msg)
     else:
         return new_session
 
@@ -95,7 +100,12 @@ def prompt_for_credentials():
 def login_and_remember_credentials(username, password, remember_credentials=False):
     """ Performs a log in, and optionally saves the credentials in a file,
     where they can be read and used again in case of an expired session."""
-    new_session = _login(username, password)
+    try:
+        new_session = _login(username, password)
+    except ResponseErrorException as e:
+        print('Error: login failed.', e)
+        exit(1)
+
     if remember_credentials:
         print('Info: saved credentials at: ' + constants.CREDENTIALS_FILE_PATH)
         _save_credentials_to_file(username, password)
