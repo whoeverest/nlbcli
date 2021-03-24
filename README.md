@@ -15,7 +15,15 @@ pip install git+https://github.com/whoeverest/nlbcli.git
 
 Now `nlbcli` should be available as an executable in your shell. If using pip w/ `--user` flag, make sure `~/.local/bin` is in `$PATH`
 
-- Log in: `nlbcli login`
+Start by authenticating: `nlbcli login`
+
+Note: optionally, you can tell `nlbcli` to remember your credentials by passing the `--remember` flag.
+This way, whenever the session expires, the tool will automatically re-authenticate and retry the query,
+without you having to type in your username/password.
+**Be careful: your credentails will be stored in a plaintext file in ~/.nlbcli/credentials**
+
+Usage examples:
+
 - List your account IDs: `nlbcli accounts`
 - See the balance on one account: `nlbcli accounts $ACCOUNT_ID balance`
 - List recent transactions: `nlbcli accounts $ACCOUNT_ID transactions`
@@ -41,7 +49,7 @@ It sends HTTPS requests, parses the HTML responses and prints the data in a way 
 suitable for the terminal. Intead of using GUI and your mouse, you can access your NLBKlik
 data using the terminal and keyboard.
 
-When you run `nlbcli login` your credentails (username and password) are stored in _plaintext_
+When you run `nlbcli login --remember` your credentails (username and password) are stored in _plaintext_
 in a file located at `~/.nlbcli/credentials`. You can inspect this file using any text editor. The
 credentials are remembered so that you run `nlbcli` in automated setups, where a human can't re-enter
 them all the time. **Keep the ~/.nlbcli directory safe!**

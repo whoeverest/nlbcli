@@ -2,14 +2,13 @@
 
 # built-in
 import sys
-import getpass
 import os
 import re
 
 # local files
 from . import constants
 from .args_parser import parsed_args, parser
-from .session import login_and_save_credentials, nlb_post, nlb_get
+from .session import prompt_for_credentials, login_and_remember_credentials, nlb_post, nlb_get
 
 # create state folder if it doesn't exist
 if not os.path.exists(constants.NLBCLI_USER_FOLDER_PATH):
@@ -19,9 +18,9 @@ if not os.path.exists(constants.NLBCLI_USER_FOLDER_PATH):
 
 def main():
     if parsed_args.subparser_name == 'login':
-        username = input('Username: ')
-        password = getpass.getpass('Password: ')
-        login_and_save_credentials(username, password)
+        username, password = prompt_for_credentials()
+        login_and_remember_credentials(
+            username, password, remember_credentials=parsed_args.remember_credentials)
 
     elif parsed_args.subparser_name == 'accounts':
         if parsed_args.accounts_subparser_name == 'balance':
