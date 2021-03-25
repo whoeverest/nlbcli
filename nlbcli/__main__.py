@@ -130,7 +130,31 @@ def main():
 
     elif parsed_args.subparser_name == 'cards':
         if parsed_args.cards_subparser_name == 'balance':
-            print('Error: card balance not implemented yet.')
+            url = 'https://www.nlbklik.com.mk/Cms/Account'
+            data = {"ignoreSettingContextAccount": "False",
+                    "SaveFilter": "False",
+                    "RemoveFilter": "False",
+                    "PageNumber": "",
+                    "PageSize": "",
+                    "DetailsView": "0",
+                    "SelectedItem": "",
+                    "PageId": "",
+                    "IsWidget": "False",
+                    "AccountID": parsed_args.card_id,
+                    "Report": "",
+                    "X-Requested-With": "XMLHttpRequest"}
+            _, soup = nlb_post(url, data)
+            selector = '#main_CmsAccountBalanceForm .col-lg-12 > .col-lg-8 > .row > div'
+            cells = soup.select(selector)
+            print('Card ID:', parsed_args.card_id)
+            print('Current balance:', cells[1].text)
+            print('Available balance:', cells[4].text)
+            print('Reserved funds:', cells[7].text)
+            print('Amount to pay:', cells[10].text)
+            print('Current limit:', cells[12].text)
+            print('Card type:', cells[14].text)
+            print('Card number:', cells[16].text)
+            print('Credit/Debit:', cells[18].text)
 
         elif parsed_args.cards_subparser_name == 'transactions':
             today = date.today()
