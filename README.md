@@ -22,14 +22,19 @@ This way, whenever the session expires, the tool will automatically re-authentic
 without you having to type in your username/password.
 **Be careful: your credentails will be stored in a plaintext file in ~/.nlbcli/credentials**
 
-Usage examples:
+## Usage:
 
+Examples:
 - List your account IDs: `nlbcli accounts`
 - See the balance on one account: `nlbcli accounts $ACCOUNT_ID balance`
 - List recent transactions: `nlbcli accounts $ACCOUNT_ID transactions`
 - Filter transactions: `nlbcli accounts $ACCOUNT_ID transactions --start="01.01.2019" --end="30.01.2019" --name="EVN" --type="out"`
-- List cards: `nlbcli cards`
 - Reserved funds (recent transactions): `nlbcli accounts $ACCOUNT_ID reservations`
+
+More examples, for working with cards cards:
+- List card IDs: `nlbcli cards`
+- Card balance: `nlbcli cards $CARD_ID balance`
+- List recent transactions: `nlbcli cards $CARD_ID transactions`
 
 Running `nlbcli -h` will show you all the available commands.
 
