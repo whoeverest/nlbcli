@@ -4,6 +4,7 @@
 import sys
 import os
 import re
+from . import formatter
 from datetime import date, timedelta
 
 # local files
@@ -41,15 +42,8 @@ def main():
             url = 'https://www.nlbklik.com.mk/Retail/Account'
             _, soup = nlb_post(url, data)
             table_cells = soup.select('.dps-content')
-            print('Account Id:', parsed_args.account_id)
-            print('Account owner:', table_cells[0].text)
-            print('Status:', table_cells[1].text)
-            print('Current balance:', table_cells[3].text)
-            print('Available balance:', table_cells[5].text)
-            print('Allowed overdraft:', table_cells[7].text)
-            print('Reserved funds:', table_cells[9].text)
-            print('Last change:', table_cells[13].text)
-            print('Last interest:', table_cells[15].text)
+            # Print the data in the desired output format
+            formatter.OutputResult(parsed_args, table_cells)
 
         elif parsed_args.accounts_subparser_name == 'transactions':
             # direction explanation:
