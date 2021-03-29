@@ -7,6 +7,8 @@ today = date.today()
 month_ago = today - timedelta(days=30)
 
 parser = argparse.ArgumentParser()
+# FIXME: this would need to be enabled so that every command has the --format argument, instead of just nlbcli accounts <id> balance
+#parser.add_argument('--format', nargs="?", choices=['tab','csv','json'], required=False, default='tab')
 main_subparsers = parser.add_subparsers(dest='subparser_name')
 login_parser = main_subparsers.add_parser(
     'login', help='Log in and save your credentials.')
@@ -34,6 +36,7 @@ transactions_parser.add_argument('--name', required=False)
 # ACCOUNTS [id] balance
 balance_parser = accounts_subparsers.add_parser(
     'balance', help="Show the balance on the specified account")
+balance_parser.add_argument('--format', nargs="?", choices=['tab','csv','json'], required=False, default='tab')
 
 # ACCOUNtS [id] reservations
 reservations_parser = accounts_subparsers.add_parser(
