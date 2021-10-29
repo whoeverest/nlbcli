@@ -37,6 +37,7 @@ transactions_parser.add_argument('--name', required=False)
 balance_parser = accounts_subparsers.add_parser(
     'balance', help="Show the balance on the specified account")
 balance_parser.add_argument('--format', nargs="?", choices=['tab','csv','json'], required=False, default='tab')
+balance_parser.add_argument('--anon', action="store_true")
 
 # ACCOUNtS [id] reservations
 reservations_parser = accounts_subparsers.add_parser(
