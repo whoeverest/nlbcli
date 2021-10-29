@@ -5,7 +5,6 @@ import sys
 
 
 def OutputResult(parsed_args, table_cells):
-    # print(parsed_args)
     output_format = parsed_args.format
     if output_format == 'tab':
         print('Account Id:', parsed_args.account_id)
@@ -45,13 +44,13 @@ def OutputResult(parsed_args, table_cells):
         csv_writer = csv.DictWriter(sys.stdout, field_names)
         csv_writer.writeheader()
         csv_writer.writerow({
-                'account-id': parsed_args.account_id,
-                'account-owner': table_cells[0].text,
-                'account-status': table_cells[1].text,
-                'current-balance': table_cells[3].text,
-                'available-balance': table_cells[5].text,
-                'allowed-overdraft': table_cells[7].text,
-                'reserved-funds': table_cells[9].text,
-                'last-change': table_cells[13].text,
-                'last-interest': table_cells[15].text
-            })
+            'account-id': parsed_args.account_id,
+            'account-owner': table_cells[0].text,
+            'account-status': table_cells[1].text,
+            'current-balance': table_cells[3].text,
+            'available-balance': table_cells[5].text,
+            'allowed-overdraft': table_cells[7].text,
+            'reserved-funds': table_cells[9].text,
+            'last-change': table_cells[13].text,
+            'last-interest': table_cells[15].text
+        })
