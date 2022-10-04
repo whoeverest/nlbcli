@@ -32,6 +32,7 @@ transactions_parser.add_argument(
 transactions_parser.add_argument(
     '--type', choices=['in', 'out'], required=False)
 transactions_parser.add_argument('--name', required=False)
+transactions_parser.add_argument('--format', nargs="?", choices=['tab','csv','json'], required=False, default='tab')
 
 # ACCOUNTS [id] balance
 balance_parser = accounts_subparsers.add_parser(
