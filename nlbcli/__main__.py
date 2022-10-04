@@ -43,7 +43,7 @@ def main():
             _, soup = nlb_post(url, data)
             table_cells = soup.select('.dps-content')
             # Print the data in the desired output format
-            formatter.OutputResult(parsed_args, table_cells)
+            formatter.OutputResult(parsed_args, table_cells, "accounts")
 
         elif parsed_args.accounts_subparser_name == 'transactions':
             # direction explanation:
@@ -89,9 +89,7 @@ def main():
 
             # we print all cells except the "Details" link/button
             # todo: parse the 0th column to extract the unique transaction id
-            for tr in soup.select('tbody > tr'):
-                tds = tr.select('td')[1:]
-                print('\t'.join(td.text.strip() for td in tds))
+            formatter.OutputResult(parsed_args, soup.select('tbody > tr'), "transactions")
 
         elif parsed_args.accounts_subparser_name == 'reservations':
             url = 'https://www.nlbklik.com.mk/Retail/ReservationList'
