@@ -48,8 +48,7 @@ def _login(username, password):
     data = {"UserName": username, "Password": password,
             "X-Requested-With": "XMLHttpRequest"}
     url = 'https://www.nlbklik.com.mk/Account/LoginUserNamePassword'
-    login_res = new_session.post(
-        url, data=data, verify=constants.VERIFY_SSL, allow_redirects=False)
+    login_res = new_session.post(url, data=data, allow_redirects=False)
     login_json_body = login_res.json()
 
     # Response always contains 'ErrorMessage' key and has status code 200, unfortunately.
@@ -119,8 +118,7 @@ def nlb_post(url, data):
     Performs a POST requests; auto-renews expired sessions.
     Returns a tuple: the response and the parsed html body."""
     def req_fn(sess):
-        return sess.post(
-            url, data=data, verify=constants.VERIFY_SSL, allow_redirects=False)
+        return sess.post(url, data=data, allow_redirects=False)
     response = _fetch_with_autorenewal(req_fn)
     soup = bs.BeautifulSoup(response.text, 'html.parser')
     return (response, soup)
@@ -132,8 +130,7 @@ def nlb_get(url):
     Returns a tuple: the response and the parsed html body.
     """
     def req_fn(sess):
-        return sess.get(url, verify=constants.VERIFY_SSL,
-                        allow_redirects=False)
+        return sess.get(url, allow_redirects=False)
     response = _fetch_with_autorenewal(req_fn)
     soup = bs.BeautifulSoup(response.text, 'html.parser')
     return (response, soup)
