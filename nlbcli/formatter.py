@@ -75,3 +75,24 @@ def OutputResult(parsed_args, table_cells, input_type):
                 'last-change': table_cells[13].text,
                 'last-interest': table_cells[15].text
             })
+        elif input_type == "transactions":
+            field_names = ['date',
+                           'recipient_name',
+                           'txn_description',
+                           'status',
+                           'amount',
+                           'txn_fee',
+                           'balance']
+            csv_writer = csv.DictWriter(sys.stdout, field_names)
+            csv_writer.writeheader()
+            for tr in table_cells:
+                tds = tr.select('td')[1:]
+                csv_writer.writerow({
+                    'date': tds[0].text.strip(),
+                    'recipient_name': tds[1].text.strip(),
+                    'txn_description': tds[2].text.strip(),
+                    'status': tds[3].text.strip(),
+                    'amount': tds[4].text.strip(),
+                    'txn_fee': tds[5].text.strip(),
+                    'balance': tds[6].text.strip(),
+                })
